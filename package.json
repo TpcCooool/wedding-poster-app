@@ -9,8 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@zumer/snapdom": "^2.0.1",
-    "html2canvas": "^1.4.1",
     "lucide-vue-next": "^0.562.0",
     "vue": "^3.3.4"
   },
