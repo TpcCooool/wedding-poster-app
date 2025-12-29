@@ -19,6 +19,11 @@ const router = createRouter({
       name: 'PosterDetail',
       component: () => import('@/pages/PosterDetailPage.vue'),
       props: true
+    },
+    {
+      path: '/seating',
+      name: 'WeddingSeating',
+      component: () => import('@/components/WeddingSeating.vue')
     }
   ]
 })
