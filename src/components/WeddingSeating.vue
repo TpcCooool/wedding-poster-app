@@ -26,7 +26,7 @@
             :key="v"
             class="btn-tab" 
             :class="{ active: state.vari === v }"
-            @click="setVariation(v)"
+            @click="setVariation(v as any)"
           >方案 {{ v }}</button>
         </div>
       </div>
@@ -152,6 +152,21 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
+interface GuestGroup {
+  label: string
+  color: string
+  list: string[]
+}
+
+interface Position {
+  top?: number
+  left?: string
+  right?: string
+}
+
+type ScenarioKey = 'A' | 'B'
+type VariationKey = 1 | 2 | 3
+
 // 颜色定义
 const colors = {
   groom: '#007AFF',
@@ -162,7 +177,7 @@ const colors = {
 }
 
 // 宾客数据库
-const guestsDB = {
+const guestsDB: Record<string, GuestGroup> = {
   main_groom: { label: '男方主桌', color: colors.main, list: ['新郎', '新娘', '新郎爸', '新郎妈', '舅舅', '外婆', '叔叔', '婶婶'] },
   main_bride: { label: '女方主桌', color: colors.main, list: ['虾仔舅', '娣舅', '岳父', '岳母', '姐姐x2', '哥哥x2', '陈湘怡'] },
 
@@ -184,7 +199,7 @@ const guestsDB = {
 }
 
 // 坐标系统
-const coords: Record<string, any> = {
+const coords: Record<string, Position> = {
   'main-L': { top: 200, left: '37%' },
   'main-R': { top: 200, right: '37%' },
   
@@ -206,7 +221,7 @@ const coords: Record<string, any> = {
 }
 
 // 方案配置
-const scenarios = {
+const scenarios: Record<ScenarioKey, Record<VariationKey, Record<string, string>>> = {
   A: {
     1: {
       'main-L': 'main_groom', 'main-R': 'main_bride',
@@ -268,7 +283,7 @@ const scenarios = {
 }
 
 // 状态
-const state = ref({ scen: 'A', vari: 1, view: 'overview' })
+const state = ref<{ scen: ScenarioKey; vari: VariationKey; view: string }>({ scen: 'A', vari: 1, view: 'overview' })
 const showModal = ref(false)
 const modalTitle = ref('')
 const modalLabel = ref('')
@@ -277,14 +292,14 @@ const modalList = ref<string[]>([])
 const layout = ref<HTMLElement | null>(null)
 
 // 计算属性
-const currentLayout = computed(() => scenarios[state.value.scen as keyof typeof scenarios][state.value.vari as keyof any])
+const currentLayout = computed(() => scenarios[state.value.scen][state.value.vari])
 
 // 方法
-function setScenario(v: string) {
+function setScenario(v: ScenarioKey) {
   state.value.scen = v
 }
 
-function setVariation(v: number) {
+function setVariation(v: VariationKey) {
   state.value.vari = v
 }
 
@@ -299,7 +314,7 @@ function formatTableId(id: string): string {
 function getTablePosition(tableId: string) {
   const pos = coords[tableId]
   if (!pos) return {}
-  const style: any = { top: pos.top + 'px' }
+  const style: Record<string, string> = { top: (pos.top || 0) + 'px' }
   if (pos.left) style.left = pos.left
   if (pos.right) style.right = pos.right
   return style
@@ -321,7 +336,7 @@ function getSatellitePosition(idx: number, total: number) {
   }
 }
 
-function openModal(tableId: string, group: any) {
+function openModal(tableId: string, group: GuestGroup) {
   modalTitle.value = tableId.includes('主') ? tableId + '桌' : `No. ${tableId.replace('t-', '')}`
   modalLabel.value = group.label
   modalColor.value = group.color
@@ -358,7 +373,7 @@ onUnmounted(() => {
 <style scoped>
 /* --- Apple System Fonts & Basics --- */
 .seating-container {
-  background-color: #F5F5F7;
+  background: linear-gradient(135deg, #F5F5F7 0%, #E8E8ED 100%);
   color: #1D1D1F;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
   margin: 0;
@@ -370,62 +385,67 @@ onUnmounted(() => {
 
 /* --- 顶部控制栏 (Glassmorphism) --- */
 .controls {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  padding: 16px 30px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 20px 30px;
   z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 40px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  gap: 50px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 }
 
 .control-group {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .control-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: #86868B;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .btn-group {
-  background: #E5E5EA;
-  padding: 4px;
-  border-radius: 12px;
+  background: rgba(229, 229, 234, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 6px;
+  border-radius: 14px;
   display: flex;
-  gap: 2px;
+  gap: 3px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .btn-tab {
-  padding: 8px 20px;
-  border-radius: 9px;
+  padding: 10px 22px;
+  border-radius: 10px;
   border: none;
   background: transparent;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: #1D1D1F;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
 }
 
 .btn-tab:hover:not(.active) {
   color: #000;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .btn-tab.active {
   background: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.1);
-  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+  color: #007AFF;
 }
 
 /* --- 画布区域 --- */
@@ -433,7 +453,7 @@ onUnmounted(() => {
   flex: 1;
   position: relative;
   overflow: hidden;
-  background: #F5F5F7;
+  background: linear-gradient(135deg, #F5F5F7 0%, #E8E8ED 100%);
   cursor: grab;
   display: flex;
   justify-content: center;
@@ -448,12 +468,13 @@ onUnmounted(() => {
 .layout-container {
   width: 1600px;
   height: 1400px;
-  background-color: #FFFFFF;
-  border-radius: 60px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F9F9FB 100%);
+  border-radius: 80px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.05);
   position: relative;
   transform-origin: center center;
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 /* 右侧装饰线 */
@@ -462,10 +483,11 @@ onUnmounted(() => {
   right: 0;
   top: 0;
   bottom: 0;
-  width: 6px;
-  background: #BFDBFE;
-  border-top-right-radius: 60px;
-  border-bottom-right-radius: 60px;
+  width: 8px;
+  background: linear-gradient(180deg, #BFDBFE 0%, #93C5FD 100%);
+  border-top-right-radius: 80px;
+  border-bottom-right-radius: 80px;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
 }
 
 /* --- 舞台区域 --- */
@@ -476,17 +498,18 @@ onUnmounted(() => {
   transform: translateX(-50%);
   width: 700px;
   height: 90px;
-  background: linear-gradient(135deg, #FF3B30, #FF2D55);
-  border-radius: 24px;
+  background: linear-gradient(135deg, #FF3B30 0%, #FF2D55 100%);
+  border-radius: 28px;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 4px;
-  box-shadow: 0 10px 30px rgba(255, 45, 85, 0.3);
+  box-shadow: 0 16px 40px rgba(255, 45, 85, 0.35), 0 0 1px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* T台 */
@@ -498,11 +521,12 @@ onUnmounted(() => {
   width: 140px;
   height: 750px;
   background: linear-gradient(180deg, #5AC8FA 0%, #007AFF 100%);
-  border-bottom-left-radius: 16px;
-  border-bottom-right-radius: 16px;
-  opacity: 0.15;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  opacity: 0.12;
   z-index: 1;
   pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.15);
 }
 
 .runway-label {
@@ -511,10 +535,10 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   color: #007AFF;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 24px;
   letter-spacing: 2px;
-  opacity: 0.5;
+  opacity: 0.4;
   z-index: 1;
   pointer-events: none;
   white-space: nowrap;
@@ -530,7 +554,7 @@ onUnmounted(() => {
   width: 120px;
   height: 120px;
   z-index: 20;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* 桌子圆圈 */
@@ -538,59 +562,81 @@ onUnmounted(() => {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: white;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F9F9FB 100%);
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 32px;
-  font-weight: 700;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  font-weight: 800;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14), 0 0 1px rgba(0, 0, 0, 0.08);
   border: 4px solid;
   cursor: pointer;
   z-index: 5;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.table-circle::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 .table-circle:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  transform: scale(1.15);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.table-circle:hover::before {
+  opacity: 1;
 }
 
 /* 概览标签 */
 .label-pill {
-  margin-top: 16px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 10px 24px;
+  margin-top: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  padding: 12px 28px;
   border-radius: 99px;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: #1D1D1F;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.08);
   white-space: nowrap;
   z-index: 10;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: all 0.25s ease;
+}
+
+.label-pill:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 /* 卫星名单 */
 .satellite-name {
   position: absolute;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: #1D1D1F;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  padding: 6px 14px;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  padding: 7px 16px;
+  border-radius: 14px;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.06);
   pointer-events: none;
   z-index: 2;
   transform-origin: center center;
-  border: 1px solid rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
 
 /* 装饰元素 */
@@ -598,22 +644,25 @@ onUnmounted(() => {
   position: absolute;
   width: 40px;
   height: 40px;
-  background: #F2F2F7;
-  border: 2px solid #E5E5EA;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #F2F2F7 0%, #E8E8ED 100%);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .entrance {
   position: absolute;
   bottom: 80px;
   right: -40px;
-  background: #007AFF;
+  background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
   color: white;
   padding: 16px 40px;
-  border-radius: 20px;
+  border-radius: 24px;
   font-size: 24px;
-  font-weight: 700;
-  box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+  font-weight: 800;
+  box-shadow: 0 12px 32px rgba(0, 122, 255, 0.35), 0 0 1px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  letter-spacing: 1px;
 }
 
 /* 弹窗 */
@@ -621,11 +670,11 @@ onUnmounted(() => {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
   z-index: 1000;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   justify-content: center;
   align-items: center;
 }
@@ -636,13 +685,14 @@ onUnmounted(() => {
 }
 
 .modal-card {
-  background: white;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F9F9FB 100%);
   width: 480px;
-  border-radius: 32px;
+  border-radius: 40px;
   padding: 40px;
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 50px 100px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
   transform: scale(0.9);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 #modal-overlay.active .modal-card {
