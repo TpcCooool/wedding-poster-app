@@ -24,17 +24,16 @@ import { Crown, Shirt, Mic2, Coins, Scale } from 'lucide-vue-next'
         <h1 class="text-[6rem] leading-[0.85] font-black text-[#881337] tracking-tighter transform -rotate-2 relative z-10 whitespace-nowrap" style="text-shadow: 4px 4px 0 #fff, 8px 8px 0 rgba(136, 19, 55, 0.15);">
           骰宝<span class="text-red-600 text-[7rem]">老婆最大！</span>
         </h1>
-        <div class="absolute -top-4 -right-8 w-24 h-24 bg-yellow-400 rounded-full border-4 border-[#881337] -z-10"></div>
+        <div class="absolute -top-4 -right-1 w-24 h-24 bg-yellow-400 rounded-full border-4 border-[#881337] -z-10"></div>
       </div>
 
-      <p class="text-base font-bold bg-[#881337] text-white px-6 py-1 transform skew-x-[-12deg] shadow-[6px_6px_0px_0px_#881337] mb-1">
+      <p class="text-base font-bold bg-[#881337] text-white px-6 py-1 transform translate-4 skew-x-[-12deg] shadow-[6px_6px_0px_0px_#881337]">
         <span class="inline-block transform skew-x-[12deg] tracking-[0.2em] uppercase">WINNER TAKES ALL</span>
       </p>
     </header>
 
     <!-- Visual Center -->
     <div class="relative z-10 flex justify-center items-center gap-8 shrink-0" style="height: 15%;">
-      <div class="absolute w-48 h-48 border-12 border-yellow-400 rounded-full opacity-40 z-0"></div>
       
       <!-- 骰子1 - 蓝色 6点 -->
       <div class="w-20 h-20 bg-blue-500 border-4 border-[#881337] rounded-xl transform rotate-10 shadow-[4px_4px_0px_0px_#881337] p-2 overflow-hidden">
@@ -97,11 +96,11 @@ import { Crown, Shirt, Mic2, Coins, Scale } from 'lucide-vue-next'
 
       <!-- 豹子 -->
       <div class="col-span-5 row-span-4 bg-yellow-400 border-4 border-[#881337] shadow-[6px_6px_0px_0px_#881337] rounded-2xl p-4 flex flex-col items-center justify-center text-center relative overflow-hidden">
-        <h3 class="text-4xl font-black text-[#881337] mb-1 tracking-tighter">🔥豹子</h3>
-        <div class="text-base font-black bg-[#881337] text-white px-3 py-1 mb-2 rounded border-2 border-white transform -rotate-1 w-full leading-tight">三骰相同</div>
+        <h3 class="text-6xl font-black text-[#881337] mb-1 tracking-tighter">🔥豹子</h3>
+        <div class="text-2xl font-black bg-[#881337] text-white px-3 py-1 mb-2 rounded border-2 border-white transform -rotate-1 w-full leading-tight">三骰相同</div>
         <div class="text-5xl font-black text-red-600 bg-white px-4 py-1 border-4 border-[#881337] transform -rotate-3 shadow-[4px_4px_0px_0px_#881337]">1:30</div>
-        <div class="mt-4 font-bold text-[#881337] text-base">"单车变摩托"</div>
-        <div class="mt-2 text-xs font-bold text-[#881337] opacity-80">(任意三子同号)</div>
+        <div class="mt-4 font-bold text-[#881337] text-lg">"单车变摩托"</div>
+        <div class="mt-2 text-lg font-bold text-[#881337] opacity-80">(任意三子同号)</div>
       </div>
 
       <!-- NPC 规则 -->
@@ -127,7 +126,7 @@ import { Crown, Shirt, Mic2, Coins, Scale } from 'lucide-vue-next'
               <Mic2 class="w-5 h-5 text-blue-600" />
               <span class="font-black text-xl text-[#881337]">轮换机制</span>
             </div>
-            <p class="text-lg font-bold text-[#881337] leading-none">谁嗓门大谁当！</p>
+            <p class="text-lg font-bold text-[#881337] leading-none">想当就当！带上金链子！</p>
           </div>
           
           <div class="col-span-2 bg-yellow-300 border-4 border-[#881337] p-2 rounded-xl shadow-[3px_3px_0px_0px_#881337] flex justify-between items-center px-4">
@@ -136,7 +135,7 @@ import { Crown, Shirt, Mic2, Coins, Scale } from 'lucide-vue-next'
                 <Coins class="w-5 h-5 text-[#881337]" /> 喜钱规矩
               </span>
             </div>
-            <div class="font-black text-2xl text-[#881337] underline decoration-4 decoration-red-500">豹子分红 NPC 30💰</div>
+            <div class="font-black text-2xl text-[#881337] underline decoration-4 decoration-red-500">豹子分红 NPC 30$</div>
           </div>
         </div>
       </div>

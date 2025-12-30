@@ -225,7 +225,7 @@ const guestsDB = reactive<Record<string, GuestGroup>>({
   't-9': { 
     label: '女方亲戚 (10大)', 
     color: colors.bride, 
-    list: ['姑妈', '姑夫', '碧倩', '春花舅妈', '丹丹', '大章', '小章', '明耀'] 
+    list: ['姑妈', '姑夫', '碧倩', '春花舅妈', '丹丹', '大章', '小章', '明耀', '娣舅妈', '虾仔舅妈'] 
   },
   't-10': { 
     label: '父亲朋友A (11人)', 
@@ -238,36 +238,48 @@ const guestsDB = reactive<Record<string, GuestGroup>>({
     list: ['振忠', '渊洲x2', '运伟', '更晓', '袁思灵x2', '钟萍x2', '飞雁'] 
   },
   't-12': { 
-    label: '母亲朋友 (4人)', 
+    label: '母亲朋友 (8人)', 
     color: colors.elder, 
-    list: ['吴云', '苹果', '端妮', '红霞'] 
+    list: ['吴云', '苹果', '端妮', '红霞', '戴德威x2', '玲玲x2'] 
+  },
+  't-13': { 
+    label: '一叶同事 (11大+1小)', 
+    color: colors.bride, 
+    list: ['瞬沿x2', '俊伟x2', '远辉x2', '攀哥', '楠哥', '小灰', '婷姐x3'] 
+  },
+  't-15': { 
+    label: '新娘朋友 (11大)', 
+    color: colors.bride, 
+    list: ['贾萱x2', '赖凤霞x2', '桐桐', '崔玉', '徐徐', '大曾', '胖妞x2', '陈捷'] 
   }
 })
 
 // 坐标系统 - 按图中位置
 const coords: Record<string, Position> = {
-  'main-L': { top: 200, left: '37%' },
-  'main-R': { top: 200, right: '37%' },
+  'main-L': { top: 200, right: '37%' },
+  'main-R': { top: 200, left: '37%' },
   
-  // 左侧内列
-  't-1': { top: 450, left: '37%' },
-  't-3': { top: 700, left: '37%' },
-  't-5': { top: 950, left: '37%' },
+  // 左侧内列 (原右侧)
+  't-9': { top: 450, left: '37%' },
+  't-11': { top: 700, left: '37%' },
+  't-6': { top: 950, left: '37%' },
 
-  // 右侧内列
-  't-9': { top: 450, right: '37%' },
-  't-11': { top: 700, right: '37%' },
-  't-6': { top: 950, right: '37%' },
+  // 右侧内列 (原左侧)
+  't-1': { top: 450, right: '37%' },
+  't-3': { top: 700, right: '37%' },
+  't-5': { top: 950, right: '37%' },
 
-  // 左侧外列
-  't-2': { top: 500, left: '15%' },
+  // 左侧外列 (原右侧)
+  't-10': { top: 500, left: '15%' },
+  't-12': { top: 800, left: '15%' },
 
-  // 右侧外列
-  't-10': { top: 500, right: '15%' },
-  't-12': { top: 800, right: '15%' },
+  // 右侧外列 (原左侧)
+  't-2': { top: 500, right: '15%' },
+  't-8': { top: 800, right: '15%' },
 
-  // 底部中间
-  't-8': { top: 950, left: '15%' }
+  // 底部
+  't-15': { top: 1150, left: '37%' },
+  't-13': { top: 1150, right: '37%' }
 }
 
 // 状态
