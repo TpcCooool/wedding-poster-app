@@ -3,35 +3,6 @@
     <!-- 顶部控制面板 -->
     <div class="controls">
       <div class="control-group">
-        <span class="control-label">SCENARIO / 情景</span>
-        <div class="btn-group">
-          <button 
-            class="btn-tab" 
-            :class="{ active: state.scen === 'A' }"
-            @click="setScenario('A')"
-          >🎉 互动优先</button>
-          <button 
-            class="btn-tab" 
-            :class="{ active: state.scen === 'B' }"
-            @click="setScenario('B')"
-          >🍵 长辈优先</button>
-        </div>
-      </div>
-
-      <div class="control-group">
-        <span class="control-label">VARIATION / 方案</span>
-        <div class="btn-group">
-          <button 
-            v-for="v in [1, 2, 3]" 
-            :key="v"
-            class="btn-tab" 
-            :class="{ active: state.vari === v }"
-            @click="setVariation(v as any)"
-          >方案 {{ v }}</button>
-        </div>
-      </div>
-
-      <div class="control-group">
         <span class="control-label">VIEW / 视图</span>
         <div class="btn-group">
           <button 
@@ -44,6 +15,17 @@
             :class="{ active: state.view === 'names' }"
             @click="setView('names')"
           >👥 详细名单</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <span class="control-label">EDIT / 编辑</span>
+        <div class="btn-group">
+          <button 
+            class="btn-tab" 
+            :class="{ active: editMode }"
+            @click="editMode = !editMode"
+          >✏️ {{ editMode ? '退出编辑' : '编辑模式' }}</button>
         </div>
       </div>
     </div>
@@ -60,7 +42,7 @@
         <!-- 动态生成的桌子层 -->
         <div id="tables-layer">
           <div 
-            v-for="(groupKey, tableId) in currentLayout" 
+            v-for="(group, tableId) in guestsDB" 
             :key="tableId"
             class="table-group"
             :style="getTablePosition(tableId)"
@@ -68,24 +50,24 @@
             <!-- 桌子圆圈 -->
             <div 
               class="table-circle"
-              :style="{ borderColor: guestsDB[groupKey].color, color: guestsDB[groupKey].color }"
-              @click="openModal(tableId, guestsDB[groupKey])"
+              :style="{ borderColor: group.color, color: group.color }"
+              @click="openModal(tableId, group)"
             >
               {{ formatTableId(tableId) }}
             </div>
 
             <!-- 概览标签 -->
             <div v-if="state.view === 'overview'" class="label-pill">
-              {{ guestsDB[groupKey].label }}
+              {{ group.label }}
             </div>
 
             <!-- 卫星名单 -->
             <template v-else>
               <div 
-                v-for="(name, idx) in getSatelliteNames(guestsDB[groupKey].list)"
+                v-for="(name, idx) in getSatelliteNames(group.list)"
                 :key="idx"
                 class="satellite-name"
-                :style="getSatellitePosition(idx, guestsDB[groupKey].list.length)"
+                :style="getSatellitePosition(idx, group.list.length)"
               >
                 {{ name }}
               </div>
@@ -118,7 +100,15 @@
             <h2 style="font-size:36px; font-weight:800; color:#1D1D1F; margin:0;">
               {{ modalTitle }}
             </h2>
-            <p style="font-size:18px; margin:4px 0 0 0;" :style="{ color: modalColor }">
+            <div v-if="editMode" style="margin-top:8px;">
+              <input 
+                v-model="editingLabel" 
+                class="edit-input"
+                placeholder="桌位标签"
+                style="font-size:16px; padding:8px 12px; border:2px solid #E5E5EA; border-radius:8px; width:200px;"
+              />
+            </div>
+            <p v-else style="font-size:18px; margin:4px 0 0 0;" :style="{ color: modalColor }">
               {{ modalLabel }}
             </p>
           </div>
@@ -128,7 +118,24 @@
           >×</button>
         </div>
         
-        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+        <!-- 编辑模式 -->
+        <div v-if="editMode">
+          <div style="margin-bottom:16px;">
+            <textarea 
+              v-model="editingNames"
+              class="edit-textarea"
+              placeholder="每行一个名字，或用逗号/顿号分隔"
+              style="width:100%; height:200px; padding:12px; border:2px solid #E5E5EA; border-radius:12px; font-size:15px; resize:vertical; font-family:inherit;"
+            ></textarea>
+          </div>
+          <div style="display:flex; gap:12px; justify-content:flex-end;">
+            <button @click="closeModal" class="modal-btn cancel">取消</button>
+            <button @click="saveEdit" class="modal-btn save">保存</button>
+          </div>
+        </div>
+
+        <!-- 查看模式 -->
+        <div v-else style="display:flex; flex-wrap:wrap; gap:10px;">
           <span 
             v-for="(name, idx) in modalList"
             :key="idx"
@@ -150,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 
 interface GuestGroup {
   label: string
@@ -164,9 +171,6 @@ interface Position {
   right?: string
 }
 
-type ScenarioKey = 'A' | 'B'
-type VariationKey = 1 | 2 | 3
-
 // 颜色定义
 const colors = {
   groom: '#007AFF',
@@ -176,139 +180,118 @@ const colors = {
   main: '#FF3B30'
 }
 
-// 宾客数据库
-const guestsDB: Record<string, GuestGroup> = {
-  main_groom: { label: '男方主桌', color: colors.main, list: ['新郎', '新娘', '新郎爸', '新郎妈', '舅舅', '外婆', '叔叔', '婶婶'] },
-  main_bride: { label: '女方主桌', color: colors.main, list: ['虾仔舅', '娣舅', '岳父', '岳母', '姐姐x2', '哥哥x2', '陈湘怡'] },
+// 宾客数据库 - 按新数据重新整理
+const guestsDB = reactive<Record<string, GuestGroup>>({
+  'main-L': { 
+    label: '男方主桌 (10大)', 
+    color: colors.main, 
+    list: ['新郎', '新娘', '新郎爸', '新郎妈', '舅舅', '舅妈', '外婆', '叔叔', '婶婶', '黄士杰'] 
+  },
+  'main-R': { 
+    label: '女方主桌 (9大+2小)', 
+    color: colors.main, 
+    list: ['虾仔舅', '娣舅', '岳父', '岳母', '姐姐x2', '哥哥x2', '陈湘怡', '宝宝椅x2'] 
+  },
+  't-1': { 
+    label: '大姨家 (10人)', 
+    color: colors.family, 
+    list: ['大姨丈', '大尚哥', '大嫂', '大尚哥孩子x2', '小尚哥', '小嫂', '小尚哥孩子x3'] 
+  },
+  't-2': { 
+    label: '三姨家 (9大1小)', 
+    color: colors.family, 
+    list: ['三姨', '三姨丈', '俊峰哥', '嫂子', '小孩', '俊哥', '瑶姐', '瑶姐夫', '燕燕', '燕燕丈夫'] 
+  },
+  't-3': { 
+    label: '敏丽姐/佳萍姑姑 (9人)', 
+    color: colors.family, 
+    list: ['敏丽姐夫', '敏丽姐', '敏丽小孩x2', '圣圣', '佳萍姑姑', '姑丈', '佳萍小孩x2'] 
+  },
+  't-5': { 
+    label: '高中同学B (9人)', 
+    color: colors.groom, 
+    list: ['邱拓先', '梁刚耀', '徐许杨', '华建', '陈佳胜', '龚神', '朱晴宇', '俊凯', '俊凯老婆'] 
+  },
+  't-6': { 
+    label: '高中同学A (10人)', 
+    color: colors.groom, 
+    list: ['廖旺', '薛莹', '郭灏', '冯琪', '罗凯凯', '王思雨', '黄培强', '强嫂', '郭宇翔', '王之韵'] 
+  },
+  't-8': { 
+    label: '大学/其他 (6人)', 
+    color: colors.groom, 
+    list: ['谢泽伟', '奥瑞', '郑建宁', '唐浩天', '朱哲聪', '徐渴望'] 
+  },
+  't-9': { 
+    label: '女方亲戚 (10大)', 
+    color: colors.bride, 
+    list: ['姑妈', '姑夫', '碧倩', '春花舅妈', '丹丹', '大章', '小章', '明耀'] 
+  },
+  't-10': { 
+    label: '父亲朋友A (11人)', 
+    color: colors.elder, 
+    list: ['少龙', '景云x2', '俊科x2', '福兴x2', '军岚x2', '远明x2'] 
+  },
+  't-11': { 
+    label: '父亲朋友B (10人)', 
+    color: colors.elder, 
+    list: ['振忠', '渊洲x2', '运伟', '更晓', '袁思灵x2', '钟萍x2', '飞雁'] 
+  },
+  't-12': { 
+    label: '母亲朋友 (4人)', 
+    color: colors.elder, 
+    list: ['吴云', '苹果', '端妮', '红霞'] 
+  }
+})
 
-  g_hs_1: { label: '高中同学 A', color: colors.groom, list: ['廖旺', '薛莹', '郭灏', '冯琪', '罗凯凯', '王思雨', '邱拓先', '汪思贝'] },
-  g_hs_2: { label: '高中同学 B', color: colors.groom, list: ['黄培强', '强嫂', '郭宇翔', '王之韵', '梁刚耀', '徐许杨', '华建'] },
-  g_uni: { label: '大学/小学', color: colors.groom, list: ['陈佳胜', '龚神', '朱晴宇', '俊凯夫妇', '谢泽伟', '奥瑞', '郑建宁', '唐浩天'] },
-  
-  g_fam_dad: { label: '男方父系亲戚', color: colors.family, list: ['敏丽姐一家', '佳萍姑姑家', '黄士杰'] },
-  g_fam_mom1: { label: '男方母系亲戚 A', color: colors.family, list: ['三姨一家', '舅舅一家'] },
-  g_fam_mom2: { label: '男方母系亲戚 B', color: colors.family, list: ['大姨一家', '小尚哥一家'] },
-  
-  g_dad_fri_all: { label: '父亲朋友 (大桌)', color: colors.elder, list: ['少龙', '景云', '俊科', '福兴', '军岚', '远明', '振忠', '渊洲', '运伟'] },
-  g_mom_fri: { label: '母亲朋友', color: colors.elder, list: ['吴云', '苹果', '端妮', '红霞', '燕燕', '袁思灵'] },
-  
-  b_coll: { label: '一叶同事', color: colors.bride, list: ['瞬沿', '俊伟', '远辉', '攀哥', '楠哥', '小灰', '婷姐'] },
-  b_fri_1: { label: '新娘朋友 A', color: colors.bride, list: ['胖妞', '玲玲', '贾萱', '戴德威'] },
-  b_fri_2: { label: '新娘朋友 B', color: colors.bride, list: ['赖凤霞', '徐徐', '大曾', '桐桐', '崔玉', '陈捷'] },
-  b_fam: { label: '女方亲戚', color: colors.family, list: ['虾仔舅家', '娣舅家', '姑妈家'] }
-}
-
-// 坐标系统
+// 坐标系统 - 按图中位置
 const coords: Record<string, Position> = {
   'main-L': { top: 200, left: '37%' },
   'main-R': { top: 200, right: '37%' },
   
-  't-9': { top: 450, left: '37%' },
-  't-11': { top: 700, left: '37%' },
-  't-13': { top: 950, left: '37%' },
-  't-15': { top: 1200, left: '37%' },
+  // 左侧内列
+  't-1': { top: 450, left: '37%' },
+  't-3': { top: 700, left: '37%' },
+  't-5': { top: 950, left: '37%' },
 
-  't-1': { top: 450, right: '37%' },
-  't-3': { top: 700, right: '37%' },
+  // 右侧内列
+  't-9': { top: 450, right: '37%' },
+  't-11': { top: 700, right: '37%' },
   't-6': { top: 950, right: '37%' },
-  't-8': { top: 1200, right: '37%' },
 
-  't-10': { top: 500, left: '15%' },
-  't-12': { top: 850, left: '15%' },
+  // 左侧外列
+  't-2': { top: 500, left: '15%' },
 
-  't-2': { top: 500, right: '15%' },
-  't-5': { top: 850, right: '15%' }
-}
+  // 右侧外列
+  't-10': { top: 500, right: '15%' },
+  't-12': { top: 800, right: '15%' },
 
-// 方案配置
-const scenarios: Record<ScenarioKey, Record<VariationKey, Record<string, string>>> = {
-  A: {
-    1: {
-      'main-L': 'main_groom', 'main-R': 'main_bride',
-      't-9': 'g_hs_1', 't-11': 'g_hs_2',
-      't-1': 'b_fri_1', 't-3': 'b_fri_2',
-      't-13': 'g_uni', 't-15': 'b_coll',
-      't-10': 'g_fam_dad', 't-12': 'g_fam_mom1',
-      't-2': 'g_dad_fri_all', 't-5': 'g_mom_fri',
-      't-6': 'g_fam_mom2', 't-8': 'b_fam'
-    },
-    2: {
-      'main-L': 'main_groom', 'main-R': 'main_bride',
-      't-9': 'g_hs_1', 't-11': 'b_coll',
-      't-1': 'b_fri_1', 't-3': 'g_uni',
-      't-13': 'g_hs_2', 't-15': 'b_fri_2',
-      't-10': 'g_fam_dad', 't-12': 'g_fam_mom1',
-      't-2': 'g_mom_fri', 't-5': 'b_fam',
-      't-6': 'g_dad_fri_all', 't-8': 'g_fam_mom2'
-    },
-    3: {
-      'main-L': 'main_groom', 'main-R': 'main_bride',
-      't-9': 'g_hs_1', 't-11': 'g_hs_2',
-      't-13': 'g_uni', 't-15': 'b_coll',
-      't-1': 'b_fri_1', 't-3': 'b_fri_2',
-      't-10': 'g_fam_mom1', 't-12': 'g_fam_mom2',
-      't-2': 'g_dad_fri_all', 't-5': 'g_mom_fri',
-      't-6': 'b_fam', 't-8': 'g_fam_dad'
-    }
-  },
-  B: {
-    1: {
-      'main-L': 'main_groom', 'main-R': 'main_bride',
-      't-9': 'g_fam_dad', 't-11': 'g_fam_mom1',
-      't-1': 'b_fam', 't-3': 'g_fam_mom2',
-      't-10': 'g_dad_fri_all', 't-12': 'g_mom_fri',
-      't-13': 'g_hs_1', 't-15': 'g_hs_2',
-      't-6': 'b_fri_1', 't-8': 'b_fri_2',
-      't-2': 'b_coll', 't-5': 'g_uni'
-    },
-    2: {
-      'main-L': 'main_groom', 'main-R': 'main_bride',
-      't-9': 'g_dad_fri_all', 't-11': 'g_mom_fri',
-      't-1': 'b_fam', 't-3': 'g_fam_dad',
-      't-13': 'g_fam_mom1', 't-15': 'g_fam_mom2',
-      't-10': 'g_hs_1', 't-12': 'g_uni',
-      't-2': 'b_fri_1', 't-5': 'b_fri_2',
-      't-6': 'g_hs_2', 't-8': 'b_coll'
-    },
-    3: {
-      'main-L': 'main_groom', 'main-R': 'main_bride',
-      't-9': 'g_fam_mom1', 't-11': 'g_fam_mom2',
-      't-1': 'g_dad_fri_all', 't-3': 'g_mom_fri',
-      't-10': 'g_fam_dad', 't-12': 'b_fam',
-      't-13': 'g_hs_1', 't-15': 'g_hs_2',
-      't-2': 'b_fri_1', 't-5': 'b_fri_2',
-      't-6': 'g_uni', 't-8': 'b_coll'
-    }
-  }
+  // 底部中间
+  't-8': { top: 950, left: '15%' }
 }
 
 // 状态
-const state = ref<{ scen: ScenarioKey; vari: VariationKey; view: string }>({ scen: 'A', vari: 1, view: 'overview' })
+const state = ref<{ view: string }>({ view: 'overview' })
+const editMode = ref(false)
 const showModal = ref(false)
 const modalTitle = ref('')
 const modalLabel = ref('')
 const modalColor = ref('')
 const modalList = ref<string[]>([])
+const currentTableId = ref('')
+const editingLabel = ref('')
+const editingNames = ref('')
 const layout = ref<HTMLElement | null>(null)
 
-// 计算属性
-const currentLayout = computed(() => scenarios[state.value.scen][state.value.vari])
-
 // 方法
-function setScenario(v: ScenarioKey) {
-  state.value.scen = v
-}
-
-function setVariation(v: VariationKey) {
-  state.value.vari = v
-}
-
 function setView(v: string) {
   state.value.view = v
 }
 
 function formatTableId(id: string): string {
-  return id.includes('主') ? id + '桌' : `No. ${id.replace('t-', '')}`
+  if (id === 'main-L') return '主L'
+  if (id === 'main-R') return '主R'
+  return id.replace('t-', '')
 }
 
 function getTablePosition(tableId: string) {
@@ -326,7 +309,7 @@ function getSatelliteNames(list: string[]): string[] {
 
 function getSatellitePosition(idx: number, total: number) {
   const radius = 115
-  const step = 360 / total
+  const step = 360 / Math.min(total, 12)
   const angle = (step * idx) - 90
   const rad = angle * (Math.PI / 180)
   const x = Math.cos(rad) * radius
@@ -337,15 +320,42 @@ function getSatellitePosition(idx: number, total: number) {
 }
 
 function openModal(tableId: string, group: GuestGroup) {
-  modalTitle.value = tableId.includes('主') ? tableId + '桌' : `No. ${tableId.replace('t-', '')}`
+  currentTableId.value = tableId
+  if (tableId === 'main-L') {
+    modalTitle.value = '主桌 L (男方)'
+  } else if (tableId === 'main-R') {
+    modalTitle.value = '主桌 R (女方)'
+  } else {
+    modalTitle.value = `${tableId.replace('t-', '')} 号桌`
+  }
   modalLabel.value = group.label
   modalColor.value = group.color
   modalList.value = group.list
+  editingLabel.value = group.label
+  editingNames.value = group.list.join('\n')
   showModal.value = true
 }
 
 function closeModal() {
   showModal.value = false
+}
+
+function saveEdit() {
+  const tableId = currentTableId.value
+  if (!tableId || !guestsDB[tableId]) return
+  
+  // 解析名字（支持换行、逗号、顿号分隔）
+  const names = editingNames.value
+    .split(/[\n,、，]/)
+    .map(n => n.trim())
+    .filter(n => n.length > 0)
+  
+  guestsDB[tableId].label = editingLabel.value
+  guestsDB[tableId].list = names
+  modalLabel.value = editingLabel.value
+  modalList.value = names
+  
+  closeModal()
 }
 
 function handleResize() {
@@ -566,7 +576,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 800;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14), 0 0 1px rgba(0, 0, 0, 0.08);
   border: 4px solid;
@@ -602,16 +612,13 @@ onUnmounted(() => {
   backdrop-filter: blur(12px);
   padding: 12px 28px;
   border-radius: 99px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #1D1D1F;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.08);
   white-space: nowrap;
   z-index: 10;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  max-width: 280px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   transition: all 0.25s ease;
 }
 
@@ -686,7 +693,9 @@ onUnmounted(() => {
 
 .modal-card {
   background: linear-gradient(135deg, #FFFFFF 0%, #F9F9FB 100%);
-  width: 480px;
+  width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
   border-radius: 40px;
   padding: 40px;
   box-shadow: 0 50px 100px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
@@ -697,5 +706,40 @@ onUnmounted(() => {
 
 #modal-overlay.active .modal-card {
   transform: scale(1);
+}
+
+/* 编辑模式按钮 */
+.modal-btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.modal-btn.cancel {
+  background: #F2F2F7;
+  color: #1D1D1F;
+}
+
+.modal-btn.cancel:hover {
+  background: #E5E5EA;
+}
+
+.modal-btn.save {
+  background: #007AFF;
+  color: white;
+}
+
+.modal-btn.save:hover {
+  background: #0051D5;
+}
+
+.edit-input:focus,
+.edit-textarea:focus {
+  outline: none;
+  border-color: #007AFF;
 }
 </style>

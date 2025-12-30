@@ -34,11 +34,41 @@ import { Crown, Shirt, Mic2, Coins, Scale } from 'lucide-vue-next'
 
     <!-- Visual Center -->
     <div class="relative z-10 flex justify-center items-center gap-8 shrink-0" style="height: 15%;">
-      <div class="absolute w-48 h-48 border-[12px] border-yellow-400 rounded-full opacity-40 z-0"></div>
+      <div class="absolute w-48 h-48 border-12 border-yellow-400 rounded-full opacity-40 z-0"></div>
       
-      <div class="w-20 h-20 bg-blue-500 border-4 border-[#881337] rounded-xl flex items-center justify-center text-3xl text-white transform rotate-[10deg] shadow-[4px_4px_0px_0px_#881337]">⚁</div>
-      <div class="w-24 h-24 bg-red-500 border-4 border-[#881337] rounded-xl flex items-center justify-center text-4xl text-white transform -rotate-[15deg] shadow-[5px_5px_0px_0px_#881337] z-10">⚅</div>
-      <div class="w-20 h-20 bg-yellow-400 border-4 border-[#881337] rounded-xl flex items-center justify-center text-3xl text-[#881337] transform rotate-[25deg] shadow-[4px_4px_0px_0px_#881337]">⚃</div>
+      <!-- 骰子1 - 蓝色 6点 -->
+      <div class="w-20 h-20 bg-blue-500 border-4 border-[#881337] rounded-xl transform rotate-10 shadow-[4px_4px_0px_0px_#881337] p-2 overflow-hidden">
+        <div class="w-full h-full grid grid-cols-2 gap-1 place-items-center">
+          <div class="w-4 h-4 bg-white rounded-full"></div>
+          <div class="w-4 h-4 bg-white rounded-full"></div>
+          <div class="w-4 h-4 bg-white rounded-full"></div>
+          <div class="w-4 h-4 bg-white rounded-full"></div>
+          <div class="w-4 h-4 bg-white rounded-full"></div>
+          <div class="w-4 h-4 bg-white rounded-full"></div>
+        </div>
+      </div>
+      <!-- 骰子2 - 红色 6点 (中间大) -->
+      <div class="w-24 h-24 bg-red-500 border-4 border-[#881337] rounded-xl transform -rotate-15 shadow-[5px_5px_0px_0px_#881337] z-10 p-2.5 overflow-hidden">
+        <div class="w-full h-full grid grid-cols-2 gap-1 place-items-center">
+          <div class="w-5 h-5 bg-white rounded-full"></div>
+          <div class="w-5 h-5 bg-white rounded-full"></div>
+          <div class="w-5 h-5 bg-white rounded-full"></div>
+          <div class="w-5 h-5 bg-white rounded-full"></div>
+          <div class="w-5 h-5 bg-white rounded-full"></div>
+          <div class="w-5 h-5 bg-white rounded-full"></div>
+        </div>
+      </div>
+      <!-- 骰子3 - 黄色 6点 -->
+      <div class="w-20 h-20 bg-yellow-400 border-4 border-[#881337] rounded-xl transform rotate-25 shadow-[4px_4px_0px_0px_#881337] p-2 overflow-hidden">
+        <div class="w-full h-full grid grid-cols-2 gap-1 place-items-center">
+          <div class="w-4 h-4 bg-[#881337] rounded-full"></div>
+          <div class="w-4 h-4 bg-[#881337] rounded-full"></div>
+          <div class="w-4 h-4 bg-[#881337] rounded-full"></div>
+          <div class="w-4 h-4 bg-[#881337] rounded-full"></div>
+          <div class="w-4 h-4 bg-[#881337] rounded-full"></div>
+          <div class="w-4 h-4 bg-[#881337] rounded-full"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Main Content -->
@@ -69,7 +99,7 @@ import { Crown, Shirt, Mic2, Coins, Scale } from 'lucide-vue-next'
       <div class="col-span-5 row-span-4 bg-yellow-400 border-4 border-[#881337] shadow-[6px_6px_0px_0px_#881337] rounded-2xl p-4 flex flex-col items-center justify-center text-center relative overflow-hidden">
         <h3 class="text-4xl font-black text-[#881337] mb-1 tracking-tighter">🔥豹子</h3>
         <div class="text-base font-black bg-[#881337] text-white px-3 py-1 mb-2 rounded border-2 border-white transform -rotate-1 w-full leading-tight">三骰相同</div>
-        <div class="text-5xl font-black text-red-600 bg-white px-4 py-1 border-4 border-[#881337] transform -rotate-3 shadow-[4px_4px_0px_0px_#881337]">1:10</div>
+        <div class="text-5xl font-black text-red-600 bg-white px-4 py-1 border-4 border-[#881337] transform -rotate-3 shadow-[4px_4px_0px_0px_#881337]">1:30</div>
         <div class="mt-4 font-bold text-[#881337] text-base">"单车变摩托"</div>
         <div class="mt-2 text-xs font-bold text-[#881337] opacity-80">(任意三子同号)</div>
       </div>
@@ -119,6 +149,7 @@ import { Crown, Shirt, Mic2, Coins, Scale } from 'lucide-vue-next'
         <div class="w-16 h-1 bg-yellow-400 mb-1"></div>
         <p class="text-[3.5rem] leading-none font-black text-yellow-400 font-art tracking-widest uppercase">听老婆的准没错</p>
       </div>
+      <p class="text-[#881337]/30 text-[10px] mt-2 font-mono text-center">DESIGNED BY TPC © 2025</p>
     </footer>
   </div>
 </template>

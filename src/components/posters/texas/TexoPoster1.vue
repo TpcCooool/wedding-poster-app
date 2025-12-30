@@ -22,7 +22,7 @@ import { Crown, Gem, Ticket, Glasses, Coins, RefreshCw, Zap, Trophy, AlignJustif
       </h1>
       <div class="mt-2 flex justify-center">
         <div class="bg-blue-900 text-white py-1 px-8 transform skew-x-[-10deg] border-2 border-yellow-400 shadow-[4px_4px_0px_0px_#FCD34D]">
-          <p class="font-bold text-2xl transform skew-x-[10deg]">"赢了掌财权，输了跪键盘"</p>
+          <p class="font-bold text-2xl transform skew-x-[10deg]">"赢了管票子，输了带孩子"</p>
         </div>
       </div>
     </header>
@@ -153,7 +153,7 @@ import { Crown, Gem, Ticket, Glasses, Coins, RefreshCw, Zap, Trophy, AlignJustif
               <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter">K♠ K♣ <span class="text-red-600">K♥ 9♦</span> 9♣</div>
             </div>
             <div class="p-1 px-2 flex-1 flex flex-col justify-center bg-white/50">
-              <div class="font-black text-black text-lg">5. 同花 (乱色)</div>
+              <div class="font-black text-black text-lg">5. 同花 </div>
               <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter text-red-600">J♦ 9♦ 7♦ 4♦ 2♦</div>
             </div>
           </div>
@@ -166,22 +166,22 @@ import { Crown, Gem, Ticket, Glasses, Coins, RefreshCw, Zap, Trophy, AlignJustif
             </div>
             <div class="p-1 px-2 border-b border-gray-200 flex-1 flex flex-col justify-center">
               <div class="font-black text-black text-lg">7. 三条</div>
-              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter">8♣ <span class="text-red-600">8♦</span> 8♠ K♣ <span class="text-red-600">4♥</span></div>
+              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter">8♣ <span class="text-red-600">8♦</span> 8♠ </div>
             </div>
             <div class="p-1 px-2 border-b border-gray-200 flex-1 flex flex-col justify-center bg-white/50">
               <div class="font-black text-black text-lg">8. 两对</div>
-              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter">J♠ J♣ <span class="text-red-600">5♦</span> 5♠ 9♣</div>
+              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter">J♠ J♣ <span class="text-red-600">5♦</span> 5♠ </div>
             </div>
             <div class="p-1 px-2 border-b border-gray-200 flex-1 flex flex-col justify-center">
               <div class="font-black text-black text-lg">9. 一对</div>
-              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter"><span class="text-red-600">10♥</span> 10♣ <span class="text-red-600">K♦</span> 4♠ <span class="text-red-600">3♥</span></div>
+              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter"><span class="text-red-600">10♥</span> 10♣ </div>
             </div>
             <div class="p-1 px-2 flex-1 flex flex-col justify-center bg-white/50">
               <div class="flex justify-between items-center font-black">
                 <span class="text-gray-600 text-lg">10. 高牌 (单张)</span>
                 <span class="text-xs text-gray-400 uppercase font-black bg-gray-200 px-1 rounded">MIN</span>
               </div>
-              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter">A♠ <span class="text-red-600">J♦</span> 8♣ <span class="text-red-600">6♥ 2♦</span></div>
+              <div class="font-mono font-bold text-lg mt-0.5 tracking-tighter">A♠ </div>
             </div>
           </div>
         </div>
